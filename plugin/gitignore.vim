@@ -3,26 +3,6 @@
 " Maintainer:	Andy Russell
 " Contributors:	Adam Bellaire, Giuseppe Rota
 " License:	This file is MIT licensed. See LICENSE for details.
-"
-"                     Fugitive Integration
-" The plugin provides no default mappings but integrates nicely with fugitive
-" https://github.com/tpope/vim-fugitive. I.e. if you have fugitive installed,
-" this plugin will use fugitive's builtin detection of a git repository and
-" add that repo's gitignore entries to 'wildignore'
-"
-" If you don't want that to happen automatically, create the file
-" `.vim/after/plugin/disable-gitignore-fugitive.vim` with the single command:
-" autocmd! wildignorefromgitignore_fugitive
-"
-"                     Manual Triggering
-" If you need to invoke the functionality manually, put this in your .vimrc:
-" map <silent> <unique> <Leader>foo <Plug>WildignoreFromGitignore
-" which will look for a .gitignore file in the same directory as the current
-" file.
-"
-" You can also map against the :WildignoreFromGitignore command that accepts
-" a directory name as in:
-" map <Leader>baz :WildignoreFromGitignore /path/to/some/repo<CR>
 
 if exists("g:loaded_gitignore_wildignore")
   finish
