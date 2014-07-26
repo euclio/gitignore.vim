@@ -40,9 +40,8 @@ This plugin is forked from the [gitignore.vim script][gitignore.vim] maintained
 by Adam Bellaire on [vim.org], which is in turn based on [this StackOverflow
 post][stackoverflow].
 
-
 [fugitive]: https://github.com/tpope/vim-fugitive
 [CtrlP]: https://github.com/kien/ctrlp.vim
 [gitignore.vim]: http://www.vim.org/scripts/script.php?script_id=2557
-[stackoverflow]: http://stackoverflow.com/q/579871
+[stackoverflow]: http://stackoverflow.com/a/581860
 [vim.org]: http://www.vim.org
