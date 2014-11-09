@@ -9,6 +9,10 @@ if exists("g:loaded_gitignore_wildignore")
 endif
 let g:loaded_gitignore_wildignore = 1
 
+if !exists("g:gitignore_ignore_submodules")
+  let g:gitignore_ignore_submodules=1
+endif
+
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -30,6 +34,15 @@ function s:WildignoreFromGitignore(...)
     endfor
     let execstring = "set wildignore+=".substitute(igstring, '^,', '', "g")
     execute execstring
+  endif
+  if g:gitignore_ignore_submodules
+    let submodules=split(system('git submodule status'), '\n')
+    for submodule in submodules
+      let submodule_path=matchstr(submodule, '.*\ze ', 42)
+      " Git gives us spaces in the path, so we need to escape the spaces
+      let submodule_path=substitute(submodule_path, ' ', '\\ ', 'g')
+      execute "set wildignore+=" . submodule_path
+    endfor
   endif
 endfunction
 
