@@ -13,10 +13,14 @@ if !exists("g:gitignore_ignore_submodules")
   let g:gitignore_ignore_submodules=1
 endif
 
+if !exists("g:gitignore_use_file")
+  let g:gitignore_use_file=0
+endif
+
 let s:save_cpo = &cpo
 set cpo&vim
 
-function s:WildignoreFromGitignore(...)
+function s:WildignoreFromGitignoreFile(...)
   let gitignore = (a:0 && !empty(a:1)) ? fnamemodify(a:1, ':p') : fnamemodify(expand('%'), ':p:h') . '/'
   let gitignore .= '.gitignore'
   if filereadable(gitignore)
@@ -35,6 +39,9 @@ function s:WildignoreFromGitignore(...)
     let execstring = "set wildignore+=".substitute(igstring, '^,', '', "g")
     execute execstring
   endif
+endfunction
+
+function s:WildignoreFromSubmodules()
   if g:gitignore_ignore_submodules
     let submodules=split(system('git submodule status'), '\n')
     for submodule in submodules
@@ -44,6 +51,27 @@ function s:WildignoreFromGitignore(...)
       execute "set wildignore+=" . submodule_path
     endfor
   endif
+endfunction
+
+function s:WildignoreFromStatus()
+  let igstring = ''
+  let filenames = split(system("git status --ignored --porcelain"), '\n')
+  for filename in filenames
+    if filename =~ '^!!'
+      let igstring .= "," . substitute(filename[3:], '/$', '*', "g")
+    endif
+  endfor
+  let execstring = "set wildignore+=" . igstring
+  execute execstring
+endfunction
+
+function s:WildignoreFromGitignore(...)
+  if g:gitignore_use_file
+    call call(function("s:WildignoreFromGitignoreFile"), a:000)
+  else
+    call <SID>WildignoreFromStatus()
+  endif
+  call <SID>WildignoreFromSubmodules()
 endfunction
 
 noremap <unique> <script> <Plug>WildignoreFromGitignore <SID>WildignoreFromGitignore
