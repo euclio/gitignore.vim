@@ -6,11 +6,11 @@ A Vim plugin that automatically adds the entries in a repo's .gitignore file to
 (such as [CtrlP]) that depend on `glob()` or `globpath()` will also ignore these
 files.
 
+Note: This plugin requires vim to be compiled with Python support.
+
 ## Fugitive Integration
-The plugin provides no default mappings but integrates nicely with [fugitive].
-That is, if you have fugitive installed, this plugin will use fugitive's builtin
-detection of a git repository and add that repo's gitignore entries to
-`wildignore`.
+This plugin uses [fugitive] to detect git repositories. The plugin will then add
+that repo's gitignore entries to `wildignore`.
 
 If you don't want that to happen automatically, create the file
 `.vim/after/plugin/disable-gitignore-fugitive.vim` with the single command:

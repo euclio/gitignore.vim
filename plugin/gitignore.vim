@@ -9,69 +9,53 @@ if exists("g:loaded_gitignore_wildignore")
 endif
 let g:loaded_gitignore_wildignore = 1
 
-if !exists("g:gitignore_ignore_submodules")
-  let g:gitignore_ignore_submodules=1
-endif
-
-if !exists("g:gitignore_use_file")
-  let g:gitignore_use_file=0
+if !has('python')
+  echo "Error: Vim not compiled with +python."
+  finish
 endif
 
 let s:save_cpo = &cpo
 set cpo&vim
 
-function s:WildignoreFromGitignoreFile(...)
-  let gitignore = (a:0 && !empty(a:1)) ? fnamemodify(a:1, ':p') : fnamemodify(expand('%'), ':p:h') . '/'
-  let gitignore .= '.gitignore'
-  if filereadable(gitignore)
-    let igstring = ''
-    for oline in readfile(gitignore)
-      let line = substitute(oline, '\s|\n|\r', '', "g")
-      if line =~ '^#' | con | endif
-      if line == ''   | con | endif
-      if line =~ '^!' | con | endif
-      if line =~ '/$'
-        let igstring .= "," . substitute(line, '/$', '*', "g")
-        con
-      endif
-      let igstring .= "," . line
-    endfor
-    let execstring = "set wildignore+=".substitute(igstring, '^,', '', "g")
-    execute execstring
-  endif
+function s:WildignoreFromStatus(git_dir)
+python << EOF
+import os
+import subprocess
+import vim
+
+git_dir = vim.eval('a:git_dir')
+
+file_statuses = subprocess.check_output(
+        ['git', 'status', '--ignored', '--porcelain'])
+for file_status in file_statuses.decode('utf-8').split('\n'):
+    if file_status.startswith('!!'):
+        escaped_path = (
+                os.path.join(git_dir, file_status[3:]).replace(' ', '\ '))
+        vim.options['wildignore'] += ',' + escaped_path.rstrip('/')
+EOF
 endfunction
 
-function s:WildignoreFromSubmodules()
-  if g:gitignore_ignore_submodules
-    let submodules=split(system('git submodule status'), '\n')
-    for submodule in submodules
-      let submodule_path=matchstr(submodule, '.*\ze ', 42)
-      " Git gives us spaces in the path, so we need to escape the spaces
-      let submodule_path=substitute(submodule_path, ' ', '\\ ', 'g')
-      execute "set wildignore+=" . submodule_path
-    endfor
-  endif
+function s:WildignoreFromSubmodules(git_dir)
+python << EOF
+import os
+import re
+import subprocess
+import vim
+
+git_dir = vim.eval('a:git_dir')
+submodules = subprocess.check_output(['git', 'submodule', 'status'])
+for submodule in submodules.splitlines():
+    # The command will return triples of hash, path, and branch.
+    # We are only interested in the path.
+    submodule_path, = re.search(r' .{40} (.*) \(.*?\)', submodule).groups()
+    escaped_path = os.path.abspath(submodule_path).replace(' ', '\ ')
+    vim.options['wildignore'] += ',' + escaped_path
+EOF
 endfunction
 
-function s:WildignoreFromStatus()
-  let igstring = ''
-  let filenames = split(system("git status --ignored --porcelain"), '\n')
-  for filename in filenames
-    if filename =~ '^!!'
-      let igstring .= "," . substitute(filename[3:], '/$', '*', "g")
-    endif
-  endfor
-  let execstring = "set wildignore+=" . igstring
-  execute execstring
-endfunction
-
-function s:WildignoreFromGitignore(...)
-  if g:gitignore_use_file
-    call call(function("s:WildignoreFromGitignoreFile"), a:000)
-  else
-    call <SID>WildignoreFromStatus()
-  endif
-  call <SID>WildignoreFromSubmodules()
+function s:WildignoreFromGitignore(git_dir)
+  call <SID>WildignoreFromStatus(a:git_dir)
+  call <SID>WildignoreFromSubmodules(a:git_dir)
 endfunction
 
 noremap <unique> <script> <Plug>WildignoreFromGitignore <SID>WildignoreFromGitignore
