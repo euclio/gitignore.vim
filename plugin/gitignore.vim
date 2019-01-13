@@ -46,9 +46,9 @@ git_dir = vim.eval('a:git_dir')
 submodules = subprocess.check_output(['git', 'submodule', 'status', '--recursive'])
 for submodule in submodules.splitlines():
     # The command will return triples of hash, path, and branch.
-    # We are only interested in the path.
-    if submodule[0] == '-':  # ignore non-initialised submodules
+    if submodule[0] == '-':  # Ignore non-initialised submodules.
         continue
+    # We are only interested in the path.
     submodule_path, = re.search(r'[ +U].{40} (.*) \(.*?\)', submodule).groups()
     escaped_path = os.path.abspath(submodule_path).replace(' ', '\ ')
     vim.options['wildignore'] += ',' + escaped_path
