@@ -43,7 +43,7 @@ import subprocess
 import vim
 
 git_dir = vim.eval('a:git_dir')
-submodules = subprocess.check_output(['git', 'submodule', 'status'])
+submodules = subprocess.check_output(['git', 'submodule', 'status', '--recursive'])
 for submodule in submodules.splitlines():
     # The command will return triples of hash, path, and branch.
     # We are only interested in the path.
