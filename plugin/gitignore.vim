@@ -47,6 +47,8 @@ submodules = subprocess.check_output(['git', 'submodule', 'status'])
 for submodule in submodules.splitlines():
     # The command will return triples of hash, path, and branch.
     # We are only interested in the path.
+    if submodule[0] == '-':  # ignore non-initialised submodules
+        continue
     submodule_path, = re.search(r'[ +U].{40} (.*) \(.*?\)', submodule).groups()
     escaped_path = os.path.abspath(submodule_path).replace(' ', '\ ')
     vim.options['wildignore'] += ',' + escaped_path
